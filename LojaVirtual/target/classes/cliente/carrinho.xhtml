@@ -1,0 +1,120 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:p="http://primefaces.org/ui">
+
+<h:head>
+	<title>Carrinho de compras</title>
+	<!-- Adicionado o arquivo de estilo a pagina inicial -->
+	<h:outputStylesheet library="css" name="style.css" />
+</h:head>
+<h:body>
+	
+	<h:form id="form-menu">
+		<p:menubar>
+			<p:menuitem value="Voltar" action="/publico/index.xhtml?faces-redirect=true" />
+		</p:menubar>
+	</h:form>
+	
+	<h:form id="form-carrinho">		
+		
+		<p:growl id="messages" />
+		
+		<p:dataTable styleClass="panel-destaque" emptyMessage="Nenhum produto foi adicionado!"
+			value="#{carrinhoCompraCtrl.listItensInseridos}" var="item" rows="10" paginator="true" paginatorPosition="bottom"
+			rowsPerPageTemplate="10,20,30">
+			
+			<f:facet name="header">Meus produtos adicionados em meu carrinho</f:facet>
+			
+			<p:column headerText="Descrição">
+				<h:outputText value="#{item.produto.nome}" />
+			</p:column>
+			
+			<p:column headerText="Quantidade" width="15%" style="text-align: right;">
+				<h:outputText value="#{item.quantidade}">
+					<f:convertNumber locale="pt_BR" currencyCode="BRL" pattern="#,##0" />
+				</h:outputText>
+			</p:column>
+			
+			<p:column headerText="R$ Vl. Unit" width="12%" style="text-align: right;">
+				<h:outputText value="#{item.valorUnitario}">
+					<f:convertNumber locale="pt_BR" currencyCode="BRL" pattern="#,##0.00" currencySymbol="$" />
+				</h:outputText>
+			</p:column>
+			
+			<p:column headerText="R$ Total" width="15%" style="text-align: right;">
+				<h:outputText value="#{item.valorTotal}">
+					<f:convertNumber locale="pt_BR" currencyCode="BRL" pattern="#,##0.00" currencySymbol="$" />
+				</h:outputText>
+			</p:column>
+			
+			<p:column headerText="Ações" width="8%" style="text-align: center;">
+				<p:commandButton icon="ui ui-icon-minus" process="@this" update="@form"
+					action="#{carrinhoCompraCtrl.removerProduto(item)}">
+					
+					<p:confirm message="Tem certeza que realmente deseja remover o item selecionado?" icon="ui ui-icon-alert" />
+					
+				</p:commandButton>
+			</p:column>
+			
+		</p:dataTable>
+		
+		<h:panelGrid columns="3" style="position: relative; top: 20px; left: 10px;">
+			<p:commandButton value="Finalizar Pedido" icon="ui ui-icon-disk"
+				process="@this" update="@form" oncomplete="if(!args.validationFailed) PF('dialog-fpg').show()"
+				actionListener="#{carrinhoCompraCtrl.validarUsuarioLogado}">
+				
+				<p:resetInput target="dialog-fpg" />
+				
+			</p:commandButton>
+			
+			<h:outputText value="Valor Total do Pedido:" />
+		
+			<h:outputText value="#{carrinhoCompraCtrl.valorTotal}" style="color: BLUE; font-size: 28px; font-weight: bold;">
+				<f:convertNumber locale="pt_BR" currencyCode="BRL" pattern="#,##0.00" currencySymbol="$" />
+			</h:outputText>
+		</h:panelGrid>
+		
+		<p:confirmDialog global="true" closable="true" closeOnEscape="true" header="Confirmação do sistema"
+			showEffect="fade" hideEffect="fade">
+			
+			<p:commandButton value="Sim" type="button" styleClass="ui-confirmdialog-yes" icon="ui ui-icon-check" />
+        	<p:commandButton value="Não" type="button" styleClass="ui-confirmdialog-no" icon="ui ui-icon-close" />
+			
+		</p:confirmDialog>
+		
+		<p:dialog id="dialog-fpg" widgetVar="dialog-fpg" header="Forma de Pagamento"
+			closable="true" maximizable="false" minimizable="true" closeOnEscape="true"
+			showEffect="explode" hideEffect="explode">
+		
+			<h:panelGrid columns="2">
+			
+				<p:outputLabel value="Forma Pgto:" for="forma-pgto" />
+				<p:selectOneMenu id="forma-pgto" required="true"
+					value="#{carrinhoCompraCtrl.formaPgtoSelecionada}">
+
+					<f:selectItem itemLabel="Selecione" noSelectionOption="true" />
+					<f:selectItems value="#{carrinhoCompraCtrl.listFormasPagamento}"
+						var="item" itemLabel="#{item.descricao}" itemValue="#{item}" />
+
+				</p:selectOneMenu>
+
+				<p:commandButton value="Salvar" icon="ui ui-icon-disk"
+					action="#{carrinhoCompraCtrl.finalizarPedido}"
+					oncomplete="if(!args.validationFailed) PF('dialog-fpg').hide()"
+					process="@form" update="@form" />
+
+				<p:commandButton value="Voltar" icon="ui ui-icon-close"
+					onclick="PF('dialog-fpg').hide()" />
+			
+			</h:panelGrid>
+		
+		</p:dialog>
+		
+	</h:form>
+</h:body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:p="http://primefaces.org/ui">
+
+<h:head>
+	<title>Pedidos</title>
+	<!-- Adicionado o arquivo de estilo a pagina inicial -->
+	<h:outputStylesheet library="css" name="style.css" />
+</h:head>
+<h:body>
+	<h:form id="form-pedidos">		
+		
+		<f:metadata>
+			<f:viewAction action="#{pedidosCtrl.preRender}" />
+		</f:metadata>
+		
+		<p:growl id="messages" />
+
+		<p:menubar>
+			<p:menuitem value="Voltar" action="/admin/lista_cliente.xhtml?faces-redirect=true" />
+		</p:menubar>
+	
+		<h:outputText value="Pedidos do cliente" style="position: relative; left: 10px; top: 20px; font-size: 38px; color: #333;" />
+		
+		<p:dataTable styleClass="panel-destaque" emptyMessage="Nenhum pedido foi encontrado!"
+			value="#{pedidosCtrl.pedidos}" var="ped" rows="10" paginator="true" paginatorPosition="bottom"
+			rowsPerPageTemplate="10,20,30">
+			
+			<f:facet name="header">Pedidos</f:facet>
+
+			<p:column headerText="Nº" width="7%"
+                	  sortBy="#{ped.id}" filterBy="#{ped.id}" filterStyle="max-width: 30px; min-width: 30px;">
+				<h:outputText value="#{ped.id}" />
+			</p:column>
+			
+			<p:column headerText="Emissão" style="width:100px; max-width: 100px; min-width: 100px"
+				sortBy="#{ped.dataEmissao}" filterBy="#{ped.dataEmissao}" filterStyle="max-width: 90px; min-width: 90px;">
+				<h:outputText value="#{ped.dataEmissao}">
+					<f:convertDateTime pattern="dd/MM/yyyy" />
+				</h:outputText>
+			</p:column>
+			
+			<p:column headerText="R$ Total" width="15%" style="text-align: right;">
+				<h:outputText value="#{ped.valor}">
+					<f:convertNumber locale="pt_BR" currencyCode="BRL" pattern="#,##0.00" currencySymbol="$" />
+				</h:outputText>
+			</p:column>
+			
+			<p:column headerText="Forma Pagamento">
+				<h:outputText value="#{ped.formaPagamento.descricao}" />
+			</p:column>
+			
+			<p:column headerText="Status" style="width:80px; max-width: 80px; min-width: 80px"
+                	  sortBy="#{ped.status}" filterBy="#{ped.status}" filterStyle="max-width: 70px; min-width: 70px;">
+				<h:outputText value="#{ped.status}" />
+			</p:column>
+
+			<p:column headerText="Ações" width="30%" style="text-align: center;">
+				<p:commandButton icon="ui  ui-icon-zoomin" process="@this" update="@form"
+					title="Visualizar itens" action="#{pedidosCtrl.visualizarItens}"
+					oncomplete="PF('dialog-visualiza-itens').show()">
+					<f:setPropertyActionListener value="#{ped}" target="#{pedidosCtrl.pedidoSelecionado}" />
+					<p:resetInput target=":form-pedidos:dialog-visualiza-itens" />
+				</p:commandButton>
+			
+				<p:commandButton icon="ui-icon-check" process="@this" update="@form"
+					title="Confirmar pedido" action="#{principalClienteCtrl.confirmarPedido(ped)}" />
+				
+				<p:commandButton icon="ui-icon-close" process="@this" update="@form"
+					title="Cancelar pedido" action="#{principalClienteCtrl.cancelarPedido(ped)}" />
+				
+				<p:commandButton icon="ui-icon-suitcase" process="@this" update="@form"
+					title="Pedido enviado" action="#{principalClienteCtrl.enviadoPedido(ped)}" />
+				
+				<p:commandButton icon="ui-icon-home" process="@this" update="@form"
+					title="Pedido entregue" action="#{principalClienteCtrl.entreguePedido(ped)}" />
+			</p:column>
+			
+		</p:dataTable>
+		
+		<h:panelGrid columns="2" style="position: relative; top: 20px; left: 10px;">
+			<h:outputText value="Valor Total dos Pedidos:" />
+		
+			<h:outputText value="#{pedidosCtrl.valorTotalPedidos}" style="color: BLUE; font-size: 28px; font-weight: bold;">
+				<f:convertNumber locale="pt_BR" currencyCode="BRL" pattern="#,##0.00" currencySymbol="$" />
+			</h:outputText>
+		</h:panelGrid>
+		
+		<p:dialog header="Visualizar Itens" id="dialog-visualiza-itens" widgetVar="dialog-visualiza-itens"
+			closable="true" minimizable="true" maximizable="false" closeOnEscape="true" modal="true">
+			
+			<p:dataTable value="#{pedidosCtrl.itens}" var="item" paginator="true"
+				paginatorPosition="bottom">
+			
+				<p:column headerText="Código">
+					<h:outputLabel value="#{item.produto.id}" />
+				</p:column>
+				
+				<p:column headerText="Descricao">
+					<h:outputLabel value="#{item.produto.nome}" />
+				</p:column>
+
+				<p:column headerText="Quantidade">
+					<h:outputLabel value="#{item.quantidade}">
+						<f:convertNumber pattern="#,##0" />
+					</h:outputLabel>
+				</p:column>
+			
+				<p:column headerText="Valor Total">
+					<h:outputLabel value="#{item.valorTotal}">
+						<f:convertNumber pattern="#,##0.00" currencyCode="BRL"
+							currencySymbol="R$" locale="pt_BR" />
+					</h:outputLabel>
+				</p:column>
+			
+			</p:dataTable>
+				
+		</p:dialog>
+	</h:form>
+</h:body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:p="http://primefaces.org/ui">
+
+<h:head>
+	<title>Loja Virtual versão 2.0</title>
+	<!-- Adicionado o arquivo de estilo a pagina inicial -->
+	<h:outputStylesheet library="css" name="style.css" />
+</h:head>
+<h:body>
+
+	<h:form prependId="false">
+		<p:menubar align="left">
+			<p:menuitem value="Inicio" action="/publico/index.xhtml?faces-redirect=true" />
+
+	        <p:submenu label="Área do cliente">
+				<p:menuitem value="Cadastro de Cliente"    action="/publico/form_pessoa.xhtml?faces-redirect=true">
+					<f:setPropertyActionListener value="1" target="#{pessoaCtrl.origem}" />
+				</p:menuitem>
+				<p:menuitem value="Pedidos" action="/cliente/principal.xhtml?faces-redirect=true">
+					<f:setPropertyActionListener value="/cliente/principal.xhtml?faces-redirect=true" 
+						target="#{principalAdminCtrl.pageRedirect}" />
+				</p:menuitem>
+            </p:submenu>			
+			
+			<p:menuitem value="Administração" action="/admin/principal.xhtml?faces-redirect=true"> 
+			</p:menuitem>
+
+	        <p:submenu label="Ajuda">
+				<p:menuitem value="Logout"    onclick="document.location='#{request.contextPath}/j_spring_security_logout'">
+				</p:menuitem>
+				<p:menuitem value="Sobre..." action="/publico/sobre.xhtml?faces-redirect=true">
+				</p:menuitem>
+
+            </p:submenu>			
+		</p:menubar>
+		
+		<h:outputLabel id="name-user" styleClass="name-user" value="#{indexCtrl.nomeUsuarioLogado}" />
+		
+	</h:form>	
+
+	<h:form id="form-principal">		
+		
+		<f:metadata>
+			<f:viewAction action="#{indexCtrl.init}" />
+		</f:metadata>
+
+		<p:growl id="messages" />
+		
+		<!-- Carrinho -->
+		<h:panelGrid columns="2" style="position: relative; top: 20px; left: 10px;">
+
+			<h:link outcome="/cliente/carrinho">
+				<h:graphicImage library="imagens" name="carrinho.png" width="53" title="Carrinho de compras"/>
+			</h:link>
+			
+			<h:outputText id="valor-total" value="#{carrinhoCompraCtrl.valorTotal}"
+				style="position: relative; left: 10px; font-size: 16px; font-weight: bold; color: #333;">
+				<f:convertNumber type="currency" pattern="#,##0.00" currencyCode="BRL" currencySymbol="R$" />
+			</h:outputText>
+			
+		</h:panelGrid>
+		
+		<p:dataGrid styleClass="panel-destaque" emptyMessage="Nenhum produto foi encontrado!"
+			value="#{indexCtrl.listProdutos}" var="prod" columns="3" layout="grid" rows="10" 
+			paginator="true" rowsPerPageTemplate="10,20,30">
+			
+			<f:facet name="header">Produtos em destaque</f:facet>
+			
+			<!-- Lista os produtos -->
+			<p:panel header="#{prod.id} - #{prod.nome}" style="text-align: center; margin: 20px;">
+			
+				<h:graphicImage value="http://localhost:8080/LojaVirtual/#{prod.imagem}" width="200" height="200" />
+				
+				<br />
+				
+				<h:panelGroup>
+					<p:commandButton icon="ui ui-icon-search" oncomplete="PF('dialog-preview').show()"
+						update="form-principal:dialog-preview" process="@this">
+						<f:setPropertyActionListener  value="#{prod}" target="#{indexCtrl.produtoSelecionado}" />
+						<p:resetInput target="form-principal:dialog-preview" />
+					</p:commandButton>
+						
+					<p:commandButton icon="ui ui-icon-plus" oncomplete="PF('dialog-adicionar').show()"
+						update="form-principal:dialog-adicionar" process="@this">
+						<f:setPropertyActionListener  value="#{prod}" target="#{indexCtrl.produtoSelecionado}" />
+						<p:resetInput target="form-principal:dialog-adicionar" />				
+					</p:commandButton>
+				</h:panelGroup>
+				
+				<br /><br />
+				
+				<h:outputText value="#{prod.preco}" style="font-size: 26px; font-weight: bold; color: GREEN !important;">
+					<f:convertNumber type="currency" pattern="#,##0.00" currencyCode="BRL" currencySymbol="R$" />
+				</h:outputText>
+			
+			</p:panel>
+			
+		</p:dataGrid>
+		
+		<p:dialog header="Visualizar Produto" modal="true" closable="true" minimizable="true" maximizable="false"
+			closeOnEscape="true" id="dialog-preview" widgetVar="dialog-preview">
+			
+			<h:panelGrid columns="1" columnClasses="center" id="pnl-preview">
+				
+				<h:outputText value="#{indexCtrl.produtoSelecionado.nome}" />
+				
+				<h:graphicImage value="http://localhost:8080/LojaVirtual/#{indexCtrl.produtoSelecionado.imagem}" />
+				
+				<h:outputText value="#{indexCtrl.produtoSelecionado.preco}" style="font-size: 26px; font-weight: bold; color: GREEN !important;">
+					<f:convertNumber type="currency" pattern="#,##0.00" currencyCode="BRL" currencySymbol="R$" />
+				</h:outputText>
+				
+				<h:panelGrid columns="3">
+					<p:inputText placeholder="Qtde" value="#{carrinhoCompraCtrl.quantidade}" required="true"
+						requiredMessage="Informe uma quantidade maior que zero!">
+						<f:convertNumber pattern="##0" />
+					</p:inputText>
+					
+					<p:commandButton value="Adicionar" icon="ui ui-icon-plus" process="pnl-preview" 
+						update="pnl-preview :form-principal:messages :form-principal:valor-total"
+						action="#{carrinhoCompraCtrl.adicionarProduto}" oncomplete="if(!args.validationFailed) PF('dialog-preview').hide()">
+						<f:setPropertyActionListener value="#{indexCtrl.produtoSelecionado}" target="#{carrinhoCompraCtrl.produtoSelecionado}" />
+					</p:commandButton>
+					
+					<p:commandButton value="Voltar" icon="ui ui-icon-arrowreturn-1-e" onclick="PF('dialog-preview').hide()" />
+				</h:panelGrid>
+
+			</h:panelGrid>
+			
+		</p:dialog>
+		
+		<p:dialog header="Adicionar Item" modal="true" closable="true" minimizable="true" maximizable="false"
+			closeOnEscape="true" id="dialog-adicionar" widgetVar="dialog-adicionar">
+			
+			<h:panelGrid columns="2" columnClasses="center" id="pnl-adicionar">
+				<p:outputLabel value="Quantidade:" for="qtde" />
+				<p:inputText id="qtde" placeholder="Qtde" value="#{carrinhoCompraCtrl.quantidade}" required="true"
+					requiredMessage="Informe uma quantidade maior que zero!">
+					<f:convertNumber pattern="##0" />
+				</p:inputText>
+			
+				<p:commandButton value="Adicionar" icon="ui ui-icon-plus" process="@this pnl-adicionar" 
+					update="pnl-adicionar :form-principal:messages :form-principal:valor-total"
+					action="#{carrinhoCompraCtrl.adicionarProduto}" oncomplete="if(!args.validationFailed) PF('dialog-adicionar').hide()">
+					<f:setPropertyActionListener value="#{indexCtrl.produtoSelecionado}" target="#{carrinhoCompraCtrl.produtoSelecionado}" />
+				</p:commandButton>
+				
+				<p:commandButton value="Voltar" icon="ui ui-icon-arrowreturn-1-e" onclick="PF('dialog-adicionar').hide()" />
+			</h:panelGrid>
+						
+		</p:dialog>
+		
+	</h:form>
+</h:body>
+</html>

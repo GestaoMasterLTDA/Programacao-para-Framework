@@ -1,0 +1,32 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core">
+
+<h:head>
+	<title>Formulário de produtos</title>
+</h:head>
+<h:body>
+	<h:form>
+		<div align="center">
+			<h:panelGrid columns="2">
+				<f:facet name="header">
+					<h:outputLabel value="Formulário de produtos"/>
+				</f:facet>
+					<h:outputLabel value="Código"/>
+					<h:inputText readonly="true" value="#{produtoCtrl.produto.id}"/>
+					<h:outputLabel value="Nome"/>
+					<h:inputText value="#{produtoCtrl.produto.nome}"/>
+					<h:outputLabel value="Preço"/>
+					<h:inputText value="#{produtoCtrl.produto.preco}"/>
+			</h:panelGrid>
+			<h:commandButton value="Lista" action="lista_produto"/>
+			<h:commandButton value="Gravar" action="#{produtoCtrl.actionGravar}"/>
+		</div>
+	</h:form>
+</h:body>
+
+</html>

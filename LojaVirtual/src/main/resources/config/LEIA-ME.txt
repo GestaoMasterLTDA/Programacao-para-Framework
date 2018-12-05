@@ -1,0 +1,2 @@
+Colocar o arquivo LojaVirtual#img.xml na pasta de instala��o do tomcat:
+    conf/Catalina/localhost para criar o diretorio virtual de resources externo
